@@ -38,9 +38,11 @@ export default {
 
     <mdui-layout-main>
         <div class="main">
-            <KeepAlive>
-                <RouterView></RouterView>
-            </KeepAlive>
+            <RouterView v-slot="{ Component }">
+                <keep-alive>
+                    <component :is="Component" />
+                </keep-alive>
+            </RouterView>
         </div>
     </mdui-layout-main>
 </template>

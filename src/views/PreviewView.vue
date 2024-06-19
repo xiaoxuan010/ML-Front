@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import PreviewChart from "@/components/PreviewChart.vue";
-import { useSelectedFileStore } from "@/stores/selectedFile";
+import { useFormInputFieldsStore } from "@/stores/formInputFields";
 import type { Snackbar } from "mdui";
 import Papa from "papaparse";
+import { storeToRefs } from "pinia";
 import prettyBytes from "pretty-bytes";
-import { onMounted, ref } from "vue";
-import { onBeforeRouteUpdate } from "vue-router";
+import { onActivated, ref } from "vue";
+import { onBeforeRouteLeave } from "vue-router";
 
 type ML_X = {
     date: string;
@@ -17,36 +18,64 @@ type ML_X = {
     LULL: number;
 };
 
-const selectedFileStore = useSelectedFileStore();
-const selectedFile = selectedFileStore.selectedFile;
+const formInputFieldsStore = useFormInputFieldsStore();
+const { selectedFile } = storeToRefs(formInputFieldsStore);
 
 const data = ref<ML_X[]>([]);
 
 const uploadGuide = ref<Snackbar | null>(null);
+const parseErrorSnack = ref<Snackbar | null>(null);
 
-function parseFile() {
-    if (selectedFile !== null) {
-        Papa.parse<ML_X>(selectedFile, {
-            header: true,
-            dynamicTyping: true,
-            complete: (results) => {
-                data.value = results.data;
-            },
-        });
-    } else {
-        console.debug("No file selected");
-        setTimeout(() => {
+async function parseFile() {
+    return new Promise<void>((resolve) => {
+        if (selectedFile.value !== null) {
             if (uploadGuide.value) {
-                uploadGuide.value.open = true;
-            } else {
-                console.error("Snackbar not initialized");
+                uploadGuide.value.open = false;
             }
-        }, 0);
-    }
+            Papa.parse<ML_X>(selectedFile.value, {
+                dynamicTyping: true,
+                complete: (results) => {
+                    data.value = results.data;
+                    resolve();
+                },
+                error: (error) => {
+                    console.error(error);
+                    if (parseErrorSnack.value) {
+                        parseErrorSnack.value.open = true;
+                    } else {
+                        console.error("Snackbar not initialized");
+                        alert(
+                            "解析 CSV 文件失败，请检查您的文件是否符合要求。"
+                        );
+                    }
+                    resolve();
+                },
+            });
+        } else {
+            console.debug("No file selected");
+            setTimeout(() => {
+                if (uploadGuide.value) {
+                    uploadGuide.value.open = true;
+                } else {
+                    console.error("Snackbar not initialized");
+                    alert("请完成前置操作：上传文件");
+                }
+                resolve();
+            }, 0);
+        }
+    });
 }
 
-onMounted(parseFile);
-onBeforeRouteUpdate(parseFile);
+onActivated(parseFile);
+
+onBeforeRouteLeave(() => {
+    if (uploadGuide.value) {
+        uploadGuide.value.open = false;
+    }
+    if (parseErrorSnack.value) {
+        parseErrorSnack.value.open = false;
+    }
+});
 </script>
 
 <template>
@@ -68,6 +97,13 @@ onBeforeRouteUpdate(parseFile);
         auto-close-delay="0"
         @action-click="$router.push('/upload')"
         >请先完成前置操作</mdui-snackbar
+    >
+    <mdui-snackbar
+        ref="parseErrorSnack"
+        action="重新上传"
+        auto-close-delay="0"
+        @action-click="$router.push('/upload')"
+        >解析 CSV 文件失败</mdui-snackbar
     >
 </template>
 

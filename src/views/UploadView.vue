@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useSelectedFileStore } from "@/stores/selectedFile";
+import { useFormInputFieldsStore } from "@/stores/formInputFields";
 import { Card, type Snackbar } from "mdui";
+import Papa from "papaparse";
 import { storeToRefs } from "pinia";
 import prettyBytes from "pretty-bytes";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 const fileInput = ref<HTMLInputElement | null>(null);
 
@@ -29,8 +30,11 @@ const triggerFileInput = () => {
 };
 
 const fileUploadCard = ref<Card | null>(null);
-const selectedFileStore = useSelectedFileStore();
-const { selectedFile } = storeToRefs(selectedFileStore);
+const selectedFileStore = useFormInputFieldsStore();
+const selectedFileHeaders = ref<string[]>([]);
+
+const { selectedFile, targetField, predictDays } =
+    storeToRefs(selectedFileStore);
 
 const handleFileSelected = (e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -44,6 +48,35 @@ const handleFileSelected = (e: Event) => {
         selectedFile.value = files[0];
     }
 };
+
+watch(selectedFile, (file) => {
+    if (file !== null) {
+        Papa.parse(file, {
+            header: true,
+            dynamicTyping: true,
+            preview: 2,
+            complete: (results) => {
+                selectedFileHeaders.value = results.meta.fields ?? [];
+
+                if (selectedFileHeaders.value.length === 0) {
+                    showWarningSnackbar(
+                        "文件解析失败，请检查您的文件是否符合要求。"
+                    );
+                } else {
+                    console.debug("File headers: ", selectedFileHeaders.value);
+                    targetField.value =
+                        selectedFileHeaders.value.at(-1) ?? "OT";
+                }
+            },
+            error: (error) => {
+                console.warn(error);
+                showWarningSnackbar(
+                    "解析文件失败，请检查您的文件是否符合要求。"
+                );
+            },
+        });
+    }
+});
 
 const clearFileSelection = () => {
     selectedFile.value = null;
@@ -142,18 +175,14 @@ const dropPrevent = (e: DragEvent) => {
                 />
             </div>
         </form>
-        <!-- <div class="selected-file-display" v-if="selectedFile !== null">
-            <mdui-chip icon="dns">文件名：{{ selectedFile.name }}</mdui-chip>
-            <mdui-chip icon="straighten"
-                >大小：{{ prettyBytes(selectedFile.size) }}</mdui-chip
-            >
-        </div> -->
         <table class="selected-file-table mdui-table">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>文件名</th>
                     <th>大小</th>
+                    <th>目标字段</th>
+                    <th>预测天数</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -162,6 +191,22 @@ const dropPrevent = (e: DragEvent) => {
                     <th>1</th>
                     <th>{{ selectedFile.name }}</th>
                     <th>{{ prettyBytes(selectedFile.size) }}</th>
+                    <th>
+                        <mdui-text-field
+                            variant="outlined"
+                            type="text"
+                            :value="targetField"
+                            @input="targetField = $event.target.value"
+                        ></mdui-text-field>
+                    </th>
+                    <th>
+                        <mdui-text-field
+                            variant="outlined"
+                            type="number"
+                            :value="predictDays"
+                            @input="predictDays = parseInt($event.target.value)"
+                        ></mdui-text-field>
+                    </th>
                     <th class="actions">
                         <mdui-button icon="close" @click="clearFileSelection"
                             >移除</mdui-button
@@ -179,7 +224,7 @@ const dropPrevent = (e: DragEvent) => {
                     </th>
                 </tr>
                 <tr v-else>
-                    <td colspan="4" class="null-file-warning">
+                    <td colspan="6" class="null-file-warning">
                         暂未选择文件……
                     </td>
                 </tr>

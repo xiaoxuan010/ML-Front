@@ -1,23 +1,25 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { use } from "echarts/core";
-import { LineChart } from "echarts/charts";
-import {
-    LegendComponent,
-    TooltipComponent,
-    DatasetComponent,
-    GridComponent,
-} from "echarts/components";
-import { SVGRenderer } from "echarts/renderers";
-import type { ComposeOption } from "echarts/core";
 import type { LineSeriesOption } from "echarts/charts";
+import { LineChart } from "echarts/charts";
 import type {
-    LegendComponentOption,
-    TooltipComponentOption,
     DatasetComponentOption,
     GridComponentOption,
+    LegendComponentOption,
+    ToolboxComponentOption,
+    TooltipComponentOption,
 } from "echarts/components";
+import {
+    DatasetComponent,
+    GridComponent,
+    LegendComponent,
+    ToolboxComponent,
+    TooltipComponent,
+} from "echarts/components";
+import type { ComposeOption } from "echarts/core";
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
 
 use([
     LegendComponent,
@@ -25,7 +27,8 @@ use([
     DatasetComponent,
     GridComponent,
     LineChart,
-    SVGRenderer,
+    ToolboxComponent,
+    CanvasRenderer,
 ]);
 
 type EChartsOption = ComposeOption<
@@ -34,16 +37,10 @@ type EChartsOption = ComposeOption<
     | DatasetComponentOption
     | GridComponentOption
     | LineSeriesOption
+    | ToolboxComponentOption
 >;
 
 import VChart from "vue-echarts";
-
-// import vintage from "@/config/vintage.json";
-
-// import { THEME_KEY } from "vue-echarts";
-
-// registerTheme("vintage", vintage);
-// provide(THEME_KEY, "vintage");
 
 const props = defineProps<{
     data: Array<{
@@ -51,36 +48,6 @@ const props = defineProps<{
         val: number;
     }>;
 }>();
-
-// let valKeys = ["val"];
-
-// function tooltipFormatter(params: any) {
-//     // let datetime = new Date(params[0].name);
-//     // let dtStr =
-//     //     datetime.getFullYear() +
-//     //     "年" +
-//     //     (datetime.getMonth() + 1) +
-//     //     "月" +
-//     //     datetime.getDate() +
-//     //     "日" +
-//     //     " " +
-//     //     datetime.getHours() +
-//     //     "时";
-
-//     return (
-//         `<div class="tooltip-content"><div class="tooltip-line tooltip-title"><span> ` +
-//         // dtStr +
-//         "</span></div>" +
-//         (params
-//             .map((param: any) => {
-//                 return `<div class="tooltip-line"><span class="line-subtitle">${param.marker}零件期货单价</span><span class="line-value">${param.value[1].toFixed(
-//                     2
-//                 )}元</span></div>`;
-//             })
-//             .join("") +
-//             "</div>")
-//     );
-// }
 
 const option = computed<EChartsOption>(() => {
     // console.log("Props data: ", props.data);
@@ -99,6 +66,16 @@ const option = computed<EChartsOption>(() => {
             trigger: "axis",
             confine: true,
             // formatter: tooltipFormatter,
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                saveAsImage: {
+                    show: true,
+                    title: "保存图片",
+                    name: "预测结果",
+                },
+            },
         },
         dataset: {
             source: props.data,

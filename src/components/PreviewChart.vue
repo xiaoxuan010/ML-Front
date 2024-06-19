@@ -1,23 +1,24 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 
-import { use } from "echarts/core";
-import { LineChart } from "echarts/charts";
-import {
-    LegendComponent,
-    TooltipComponent,
-    DatasetComponent,
-    GridComponent,
-} from "echarts/components";
-import { SVGRenderer } from "echarts/renderers";
-import type { ComposeOption } from "echarts/core";
 import type { LineSeriesOption } from "echarts/charts";
+import { LineChart } from "echarts/charts";
 import type {
-    LegendComponentOption,
-    TooltipComponentOption,
     DatasetComponentOption,
     GridComponentOption,
+    LegendComponentOption,
+    TooltipComponentOption,
 } from "echarts/components";
+import {
+    DatasetComponent,
+    GridComponent,
+    LegendComponent,
+    ToolboxComponent,
+    TooltipComponent,
+} from "echarts/components";
+import type { ComposeOption } from "echarts/core";
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
 
 use([
     LegendComponent,
@@ -25,7 +26,8 @@ use([
     DatasetComponent,
     GridComponent,
     LineChart,
-    SVGRenderer,
+    CanvasRenderer,
+    ToolboxComponent,
 ]);
 
 type EChartsOption = ComposeOption<
@@ -34,8 +36,10 @@ type EChartsOption = ComposeOption<
     | DatasetComponentOption
     | GridComponentOption
     | LineSeriesOption
+    | ToolboxComponentOption
 >;
 
+import type { ToolboxComponentOption } from "echarts";
 import VChart from "vue-echarts";
 
 const props = defineProps<{
@@ -49,36 +53,6 @@ const props = defineProps<{
         LULL: number;
     }>;
 }>();
-
-// let valKeys = ["HUFL", "HULL", "MUFL", "MULL", "LUFL", "LULL"];
-
-// function tooltipFormatter(params: any) {
-//     let datetime = new Date(params[0].name);
-//     let dtStr =
-//         datetime.getFullYear() +
-//         "年" +
-//         (datetime.getMonth() + 1) +
-//         "月" +
-//         datetime.getDate() +
-//         "日" +
-//         " " +
-//         datetime.getHours() +
-//         "时";
-
-//     return (
-//         `<div class="tooltip-content"><div class="tooltip-line tooltip-title"><span> ` +
-//         dtStr +
-//         "</span></div>" +
-//         (params
-//             .map((param: any) => {
-//                 return `<div class="tooltip-line"><span class="line-subtitle">${param.marker}零件期货单价</span><span class="line-value">${
-//                     param.value[valKeys[param.seriesIndex]]
-//                 }元</span></div>`;
-//             })
-//             .join("") +
-//             "</div>")
-//     );
-// }
 
 const option = computed<EChartsOption>(() => ({
     legend: {
@@ -95,6 +69,16 @@ const option = computed<EChartsOption>(() => ({
         trigger: "axis",
         confine: true,
         // formatter: tooltipFormatter,
+    },
+    toolbox: {
+        show: true,
+        feature: {
+            saveAsImage: {
+                show: true,
+                title: "保存图片",
+                name: "数据预览",
+            },
+        },
     },
     dataset: {
         source: props.data,

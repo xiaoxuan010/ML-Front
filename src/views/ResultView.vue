@@ -3,7 +3,7 @@ import PredictionChart from "@/components/PredictionChart.vue";
 import { useSelectedFileStore } from "@/stores/selectedFile";
 import axios from "axios";
 import type { Snackbar } from "mdui";
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const selectedFileStore = useSelectedFileStore();
 const selectedFile = selectedFileStore.selectedFile;

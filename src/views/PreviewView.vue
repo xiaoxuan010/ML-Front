@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import PreviewChart from "@/components/PreviewChart.vue";
 import { useSelectedFileStore } from "@/stores/selectedFile";
-import prettyBytes from "pretty-bytes";
-import Papa, { type LocalFile } from "papaparse";
-import { onMounted, ref } from "vue";
 import type { Snackbar } from "mdui";
+import Papa from "papaparse";
+import prettyBytes from "pretty-bytes";
+import { onMounted, ref } from "vue";
 import { onBeforeRouteUpdate } from "vue-router";
 
 type ML_X = {

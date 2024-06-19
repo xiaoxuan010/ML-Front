@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSelectedFileStore } from "@/stores/selectedFile";
-import { $, Card, type Snackbar } from "mdui";
+import { Card, type Snackbar } from "mdui";
 import { storeToRefs } from "pinia";
 import prettyBytes from "pretty-bytes";
 import { ref } from "vue";
@@ -174,7 +174,7 @@ const dropPrevent = (e: DragEvent) => {
                         <mdui-button
                             icon="query_stats"
                             @click="$router.push('/result')"
-                            >分析</mdui-button
+                            >预测</mdui-button
                         >
                     </th>
                 </tr>

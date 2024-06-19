@@ -1,13 +1,13 @@
-import "mdui/mdui.css";
 import "mdui";
+import "mdui/mdui.css";
 import "/src/assets/base.css";
 import "/src/assets/icon.css";
 
+import { setColorScheme } from "mdui";
+import { createPinia } from "pinia";
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
-import { setColorScheme } from "mdui";
-import { createPinia } from "pinia";
 
 const app = createApp(App);
 

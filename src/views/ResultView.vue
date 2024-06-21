@@ -22,7 +22,7 @@ const resultErrorTitle = ref<string>("数据分析失败");
 const uploadGuide = ref<Snackbar | null>(null);
 const errorDialog = ref<Dialog | null>(null);
 
-const API_PERFIX = "http://127.0.0.1:5000";
+const API_PERFIX = "http://localhost:5000";
 
 function getResultData() {
     if (formInputFields.selectedFile.value !== null) {
